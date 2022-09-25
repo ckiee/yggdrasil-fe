@@ -24,7 +24,7 @@ impl PeerMeta {
         Ok(Self {
             major: dat[4],
             minor: dat[5],
-            key: PublicKey::from_bytes(&*(&dat[6..(6 + 32)]))?,
+            key: PublicKey::from_bytes(&dat[6..(6 + 32)])?,
         })
     }
 

@@ -7,8 +7,8 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use ed25519_dalek::{Keypair, PublicKey};
-use rustls::client::ServerCertVerifier;
+use ed25519_dalek::{Keypair};
+
 use yggdrasil_fe::{
     cert_verifier::CustomServerCertVerifier,
     handler::PacketHandler,

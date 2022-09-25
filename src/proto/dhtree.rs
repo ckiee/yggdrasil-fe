@@ -1,6 +1,6 @@
-use std::time::Instant;
 
-use anyhow::{anyhow, ensure, Result};
+
+use anyhow::{anyhow, Result};
 use ed25519_dalek::{PublicKey, Signature, PUBLIC_KEY_LENGTH, SIGNATURE_LENGTH};
 use integer_encoding::VarInt;
 
