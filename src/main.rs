@@ -9,15 +9,12 @@ use std::{
 use anyhow::{Context, Result};
 use ed25519_dalek::{Keypair, PublicKey};
 use rustls::client::ServerCertVerifier;
-
-use crate::{
+use yggdrasil_fe::{
     cert_verifier::CustomServerCertVerifier,
     handler::PacketHandler,
     proto::{PacketType, PeerMeta, TreeInfo, PEER_META_BYTE_SIZE},
 };
-mod cert_verifier;
-mod handler;
-mod proto;
+
 
 fn main() -> Result<()> {
     let root_store = rustls::RootCertStore::empty();
@@ -34,24 +31,18 @@ fn main() -> Result<()> {
     let ext_ip = "127.0.0.1";
     let port: u16 = 39575;
     let mut conn = rustls::ClientConnection::new(rc_config, ext_ip.try_into()?)?;
-    let mut sock = TcpStream::connect((ext_ip, port)).unwrap(); // TODO: Nodelay if double because of tun
+    let mut sock = TcpStream::connect((ext_ip, port)).unwrap(); // TODO: flip nodelay on if double because of tun
     let mut tls = rustls::Stream::new(&mut conn, &mut sock);
     let mut buf = [0u8; PEER_META_BYTE_SIZE];
     let mut csprng = rand::thread_rng();
     let keypair = Keypair::generate(&mut csprng);
-    let format_key = |bytes: &[u8]| {
-        bytes
-            .iter()
-            .map(|x| format!("{x:0>2x}"))
-            .collect::<String>()
-    };
 
     tls.read_exact(&mut buf).context("failed tls read")?;
     tls.write(&PeerMeta::new_with_key(keypair.public).to_bytes())?;
     let remote_meta = PeerMeta::from_bytes(&buf).context("PeerMeta parse rx")?;
-    dbg!(remote_meta);
-
     let handler = PacketHandler {};
+    handler.handle_peer_meta(remote_meta)?;
+
 
     // Introduction's over, let's start processing packets.
     loop {
@@ -83,12 +74,12 @@ fn main() -> Result<()> {
         };
 
         match typ {
-            PacketType::Tree => PacketHandler::handle_tree_info(
+            PacketType::Tree => handler.handle_tree_info(
                 TreeInfo::from_bytes(&data).context("while decoding TreeInfo")?,
-            ),
+            )?,
             PacketType::KeepAlive => {
                 // Look away, mom! (TODO: use the fancy types?)
-                tls.write(&[1, 0])?;
+                tls.write(&[0, 1, 0])?;
             }
             _ => eprintln!("don't know how to handle {typ:?}"),
         };

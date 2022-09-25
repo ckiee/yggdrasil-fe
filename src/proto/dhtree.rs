@@ -6,8 +6,8 @@ use integer_encoding::VarInt;
 
 #[derive(Debug, Clone)]
 pub struct TreeInfo {
-    root: PublicKey, // TODO: Option<> it?
-    hops: Vec<TreeHop>,
+    pub root: PublicKey, // TODO: Option<> it?
+    pub hops: Vec<TreeHop>,
 
     // https://matrix.to/#/!vVtVcVdzAdhGFLzFwm:matrix.org/$ogz4ipwTMgJ84lccwK_4mWarrVAJffZeC6S1VXs40e8?via=matrix.org&via=tchncs.de&via=envs.net
     // Previously we would try to sort the order of root announcements
@@ -21,13 +21,13 @@ pub struct TreeInfo {
     // hseq: u64,
     /// The root announcement sequence, monotonic and
     /// sequentially incrementing in ygg-go.
-    seq: u64, // like icmp's icmp_seq for the root peer's announcements
+    pub seq: u64, // like icmp's icmp_seq for the root peer's announcements
 }
 #[derive(Debug, Clone)]
 pub struct TreeHop {
-    key_next: PublicKey,
-    port: u64,
-    sig: Signature,
+    pub key_next: PublicKey,
+    pub port: u64,
+    pub sig: Signature,
 }
 
 impl TreeInfo {
@@ -65,7 +65,7 @@ impl TreeInfo {
             });
         }
         // We've eaten everything now. nomnomnomnomnom <3
-        assert!(pos == dat.len() - 1);
+        assert!(pos == dat.len());
 
         Ok(Self { root, seq, hops })
     }
