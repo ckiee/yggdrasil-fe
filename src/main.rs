@@ -38,7 +38,7 @@ fn main() -> Result<()> {
     let keypair = Keypair::generate(&mut csprng);
 
     tls.read_exact(&mut buf).context("failed tls read")?;
-    tls.write(&PeerMeta::new_with_key(keypair.public).to_bytes())?;
+    tls.write_all(&PeerMeta::new_with_key(keypair.public).to_bytes())?;
     let remote_meta = PeerMeta::from_bytes(&buf).context("PeerMeta parse rx")?;
     let handler = PacketHandler {};
     handler.handle_peer_meta(remote_meta)?;
@@ -79,7 +79,7 @@ fn main() -> Result<()> {
             )?,
             PacketType::KeepAlive => {
                 // Look away, mom! (TODO: use the fancy types?)
-                tls.write(&[0, 1, 0])?;
+                tls.write_all(&[0, 1, 0])?;
             }
             _ => eprintln!("don't know how to handle {typ:?}"),
         };
